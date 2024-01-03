@@ -3,11 +3,24 @@ const mongoose = require('mongoose');
 var admin = require("firebase-admin");
 var serviceAccount = require("./membership-92638-firebase-adminsdk-qpzi6-1245779aab.json");
 const Product = require('./models/productModel');
+const Device = require('./models/deviceModel');
 const RelayStatus = require('./models/relayStatusModel');
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({exdtended: false}));
+
+mongoose
+.connect('mongodb+srv://Cluster82349:Node123mrs@cluster82349.y2zr4ot.mongodb.net/Node-API?retryWrites=true&w=majority')
+.then(()=> {
+    console.log('connected to MongoDB');
+    app.listen(3000, ()=>{
+        console.log("Node API app is listen on port 3000");
+    });
+})
+.catch((error)=>{
+    console.log(error);
+});
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
   });
@@ -44,6 +57,15 @@ app.get('/relayStatus/:id', async (req, res) => {
 });
 
 //routes
+app.post('/deviceInfo', async (req, res) => {
+    try {
+        const device = await Device.create(req.body);
+        res.status(200).json({message: "Device info written into Database"});
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).json({message: error.message});
+    }
+});
 
 app.post('/products', async (req, res) => {
     try {
@@ -101,16 +123,4 @@ app.delete('/products/:id', async (req, res) => {
     } catch (error) {
         res.status(500).json({message: error.message});
     }
-});
-
-mongoose
-.connect('mongodb+srv://Cluster82349:Node123mrs@cluster82349.y2zr4ot.mongodb.net/Node-API?retryWrites=true&w=majority')
-.then(()=> {
-    console.log('connected to MongoDB');
-    app.listen(3000, ()=>{
-        console.log("Node API app is listen on port 3000");
-    });
-})
-.catch((error)=>{
-    console.log(error);
 });
